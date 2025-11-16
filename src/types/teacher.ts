@@ -1,13 +1,18 @@
 export interface AttendanceRecord {
   date: string;
+  id: string;
+  name: string;
   status: 'present' | 'absent' | 'late';
-  timestamp?: number;
+  time_in: string;
+  time_out: string;
+  trade: string;
 }
 
 export interface Teacher {
   id: string;
   name: string;
-  attendance: Record<string, AttendanceRecord>;
+  trade: string;
+  attendanceRecords: AttendanceRecord[];
 }
 
 export interface AttendanceStats {

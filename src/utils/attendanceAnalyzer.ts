@@ -1,7 +1,6 @@
 import { AttendanceRecord, AttendanceStats, AIAnalysis, AttendanceCondition } from '@/types/teacher';
 
-export function calculateAttendanceStats(attendance: Record<string, AttendanceRecord>): AttendanceStats {
-  const records = Object.values(attendance || {});
+export function calculateAttendanceStats(records: AttendanceRecord[]): AttendanceStats {
   const totalDays = records.length;
   const presentDays = records.filter(r => r.status === 'present').length;
   const absentDays = records.filter(r => r.status === 'absent').length;
@@ -25,22 +24,22 @@ export function analyzeAttendance(stats: AttendanceStats): AIAnalysis {
   let reason: string;
   let advice: string;
 
-  if (attendanceRate >= 95) {
+  if (attendanceRate >= 90) {
     condition = 'excellent';
     reason = `Outstanding attendance rate of ${attendanceRate.toFixed(1)}%`;
-    advice = 'Strong performance. Consider recognition reward.';
-  } else if (attendanceRate >= 85) {
+    advice = 'Keep up the strong consistency! Great role model.';
+  } else if (attendanceRate >= 75) {
     condition = 'good';
     reason = `Good attendance rate of ${attendanceRate.toFixed(1)}%`;
-    advice = 'Stable attendance. Keep encouraging.';
-  } else if (attendanceRate >= 70) {
+    advice = 'Good performance—improve a little to reach excellence.';
+  } else if (attendanceRate >= 60) {
     condition = 'weak';
     reason = `Below average attendance rate of ${attendanceRate.toFixed(1)}%`;
-    advice = 'Irregular attendance detected. Monitor closely.';
+    advice = 'Attendance is dropping. Recommend meeting with the teacher.';
   } else {
     condition = 'critical';
     reason = `Poor attendance rate of ${attendanceRate.toFixed(1)}%`;
-    advice = 'Serious attendance issue. Consider intervention.';
+    advice = 'Serious attendance problem. Requires urgent intervention.';
   }
 
   // Check for late pattern

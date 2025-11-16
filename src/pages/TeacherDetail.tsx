@@ -18,22 +18,19 @@ export default function TeacherDetail() {
     const teacher = teachers.find((t) => t.id === id);
     if (!teacher) return null;
 
-    const stats = calculateAttendanceStats(teacher.attendance);
+    const stats = calculateAttendanceStats(teacher.attendanceRecords);
     const analysis = analyzeAttendance(stats);
 
-    // Prepare chart data
-    const attendanceEntries = Object.entries(teacher.attendance || {})
-      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB));
-
-    const trendData = attendanceEntries.map(([date, record]) => ({
-      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    // Prepare chart data from attendanceRecords
+    const trendData = teacher.attendanceRecords.map((record) => ({
+      date: new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       status: record.status === 'present' ? 1 : record.status === 'late' ? 0.5 : 0,
     }));
 
     // Weekly summary
     const weeklyData: Record<string, { present: number; absent: number; late: number }> = {};
-    attendanceEntries.forEach(([date, record]) => {
-      const weekStart = new Date(date);
+    teacher.attendanceRecords.forEach((record) => {
+      const weekStart = new Date(record.date);
       weekStart.setDate(weekStart.getDate() - weekStart.getDay());
       const weekKey = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       
