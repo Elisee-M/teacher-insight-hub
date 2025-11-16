@@ -21,7 +21,7 @@ export default function Teachers() {
 
   const teacherAnalyses = useMemo(() => {
     return teachers.map((teacher) => {
-      const stats = calculateAttendanceStats(teacher.attendance);
+      const stats = calculateAttendanceStats(teacher.attendanceRecords);
       const analysis = analyzeAttendance(stats);
       return {
         ...teacher,

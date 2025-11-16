@@ -17,10 +17,10 @@ export default function Dashboard() {
     let totalAttendanceRate = 0;
 
     teachers.forEach((teacher) => {
-      const teacherStats = calculateAttendanceStats(teacher.attendance);
+      const teacherStats = calculateAttendanceStats(teacher.attendanceRecords);
       totalAttendanceRate += teacherStats.attendanceRate;
 
-      const todayRecord = teacher.attendance?.[today];
+      const todayRecord = teacher.attendanceRecords.find(r => r.date === today);
       if (todayRecord) {
         if (todayRecord.status === 'present') presentToday++;
         else if (todayRecord.status === 'absent') absentToday++;
