@@ -66,6 +66,8 @@ export default function Teachers() {
                     <TableHead className="text-right">Present</TableHead>
                     <TableHead className="text-right">Absent</TableHead>
                     <TableHead className="text-right">Late</TableHead>
+                    <TableHead className="text-right">Left Early</TableHead>
+                    <TableHead className="text-right">Left On Time</TableHead>
                     <TableHead className="text-right">Attendance %</TableHead>
                     <TableHead>AI Condition</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -74,7 +76,7 @@ export default function Teachers() {
                 <TableBody>
                   {teacherAnalyses.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                         No teachers found in database
                       </TableCell>
                     </TableRow>
@@ -91,6 +93,12 @@ export default function Teachers() {
                         </TableCell>
                         <TableCell className="text-right text-warning">
                           {teacher.stats.lateDays}
+                        </TableCell>
+                        <TableCell className="text-right text-info">
+                          {teacher.stats.leftEarlyDays}
+                        </TableCell>
+                        <TableCell className="text-right text-primary">
+                          {teacher.stats.leftOnTimeDays}
                         </TableCell>
                         <TableCell className="text-right font-semibold">
                           {teacher.stats.attendanceRate.toFixed(1)}%

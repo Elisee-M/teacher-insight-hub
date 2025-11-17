@@ -1,54 +1,104 @@
-import { useMemo } from 'react';
-import { Users, CheckCircle2, XCircle, Clock, TrendingUp } from 'lucide-react';
+import { useMemo, useEffect, useState } from 'react';
+import { Users, CheckCircle2, XCircle, Clock, TrendingUp, LogOut, LogIn } from 'lucide-react';
 import { StatCard } from '@/components/StatCard';
 import { useTeachers } from '@/hooks/useTeachers';
 import { calculateAttendanceStats } from '@/utils/attendanceAnalyzer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ref, get } from 'firebase/database';
+import { database } from '@/lib/firebase';
 
 export default function Dashboard() {
   const { teachers, loading } = useTeachers();
+  const [todayStats, setTodayStats] = useState({
+    presentToday: 0,
+    absentToday: 0,
+    lateToday: 0,
+    leftEarlyToday: 0,
+    leftOnTimeToday: 0,
+  });
+
+  useEffect(() => {
+    const fetchTodayStats = async () => {
+      try {
+        const teachersRef = ref(database, 'teachers');
+        const snapshot = await get(teachersRef);
+        const teachersData = snapshot.val();
+        
+        if (!teachersData) {
+          return;
+        }
+
+        let present = 0;
+        let absent = 0;
+        let late = 0;
+        let leftEarly = 0;
+        let leftOnTime = 0;
+
+        Object.values(teachersData).forEach((teacher: any) => {
+          const status = (teacher.status || '').toLowerCase();
+          
+          if (status.includes('absent')) {
+            absent++;
+          } else if (status.includes('late')) {
+            late++;
+          } else if (status.includes('left_early') || status.includes('left early')) {
+            leftEarly++;
+          } else if (status.includes('left_on_time') || status.includes('left on time')) {
+            leftOnTime++;
+          } else if (status.includes('present') || status) {
+            present++;
+          }
+        });
+
+        setTodayStats({
+          presentToday: present,
+          absentToday: absent,
+          lateToday: late,
+          leftEarlyToday: leftEarly,
+          leftOnTimeToday: leftOnTime,
+        });
+      } catch (error) {
+        console.error('Error fetching today stats:', error);
+      }
+    };
+
+    if (!loading) {
+      fetchTodayStats();
+    }
+  }, [loading]);
 
   const stats = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    let presentToday = 0;
-    let absentToday = 0;
-    let lateToday = 0;
     let totalAttendanceRate = 0;
 
     teachers.forEach((teacher) => {
       const teacherStats = calculateAttendanceStats(teacher.attendanceRecords);
       totalAttendanceRate += teacherStats.attendanceRate;
-
-      const todayRecord = teacher.attendanceRecords.find(r => r.date === today);
-      if (todayRecord) {
-        if (todayRecord.status === 'present') presentToday++;
-        else if (todayRecord.status === 'absent') absentToday++;
-        else if (todayRecord.status === 'late') lateToday++;
-      }
     });
 
     const avgAttendanceRate = teachers.length > 0 ? totalAttendanceRate / teachers.length : 0;
 
     return {
       totalTeachers: teachers.length,
-      presentToday,
-      absentToday,
-      lateToday,
+      ...todayStats,
       avgAttendanceRate: avgAttendanceRate.toFixed(1),
     };
-  }, [teachers]);
+  }, [teachers, todayStats]);
 
   const pieData = [
     { name: 'Present', value: stats.presentToday, color: 'hsl(var(--success))' },
     { name: 'Absent', value: stats.absentToday, color: 'hsl(var(--destructive))' },
     { name: 'Late', value: stats.lateToday, color: 'hsl(var(--warning))' },
+    { name: 'Left Early', value: stats.leftEarlyToday, color: 'hsl(var(--info))' },
+    { name: 'Left On Time', value: stats.leftOnTimeToday, color: 'hsl(var(--primary))' },
   ];
 
   const barData = [
     { name: 'Present', count: stats.presentToday, fill: 'hsl(var(--success))' },
     { name: 'Absent', count: stats.absentToday, fill: 'hsl(var(--destructive))' },
     { name: 'Late', count: stats.lateToday, fill: 'hsl(var(--warning))' },
+    { name: 'Left Early', count: stats.leftEarlyToday, fill: 'hsl(var(--info))' },
+    { name: 'Left On Time', count: stats.leftOnTimeToday, fill: 'hsl(var(--primary))' },
   ];
 
   if (loading) {
@@ -70,7 +120,7 @@ export default function Dashboard() {
           <p className="text-muted-foreground">Real-time attendance monitoring and analysis</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
           <StatCard
             title="Total Teachers"
             value={stats.totalTeachers}
@@ -96,10 +146,22 @@ export default function Dashboard() {
             colorClass="text-warning"
           />
           <StatCard
+            title="Left Early Today"
+            value={stats.leftEarlyToday}
+            icon={LogOut}
+            colorClass="text-info"
+          />
+          <StatCard
+            title="Left On Time Today"
+            value={stats.leftOnTimeToday}
+            icon={LogIn}
+            colorClass="text-primary"
+          />
+          <StatCard
             title="Avg Attendance"
             value={`${stats.avgAttendanceRate}%`}
             icon={TrendingUp}
-            colorClass="text-info"
+            colorClass="text-muted-foreground"
           />
         </div>
 

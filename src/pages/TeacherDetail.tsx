@@ -22,25 +22,36 @@ export default function TeacherDetail() {
     const analysis = analyzeAttendance(stats);
 
     // Prepare chart data from attendanceRecords
-    const trendData = teacher.attendanceRecords.map((record) => ({
-      date: new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      status: record.status === 'present' ? 1 : record.status === 'late' ? 0.5 : 0,
-    }));
+    const trendData = teacher.attendanceRecords.map((record) => {
+      let statusValue = 0;
+      if (record.status === 'present') statusValue = 1;
+      else if (record.status === 'late') statusValue = 0.75;
+      else if (record.status === 'left_early') statusValue = 0.5;
+      else if (record.status === 'left_on_time') statusValue = 0.25;
+      else statusValue = 0; // absent
+      
+      return {
+        date: new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        status: statusValue,
+      };
+    });
 
     // Weekly summary
-    const weeklyData: Record<string, { present: number; absent: number; late: number }> = {};
+    const weeklyData: Record<string, { present: number; absent: number; late: number; leftEarly: number; leftOnTime: number }> = {};
     teacher.attendanceRecords.forEach((record) => {
       const weekStart = new Date(record.date);
       weekStart.setDate(weekStart.getDate() - weekStart.getDay());
       const weekKey = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       
       if (!weeklyData[weekKey]) {
-        weeklyData[weekKey] = { present: 0, absent: 0, late: 0 };
+        weeklyData[weekKey] = { present: 0, absent: 0, late: 0, leftEarly: 0, leftOnTime: 0 };
       }
       
       if (record.status === 'present') weeklyData[weekKey].present++;
       else if (record.status === 'absent') weeklyData[weekKey].absent++;
       else if (record.status === 'late') weeklyData[weekKey].late++;
+      else if (record.status === 'left_early') weeklyData[weekKey].leftEarly++;
+      else if (record.status === 'left_on_time') weeklyData[weekKey].leftOnTime++;
     });
 
     const weeklySummary = Object.entries(weeklyData).map(([week, data]) => ({
@@ -105,7 +116,7 @@ export default function TeacherDetail() {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Days</CardTitle>
@@ -135,13 +146,39 @@ export default function TeacherDetail() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
+              <CardTitle className="text-sm font-medium">Late Days</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.attendanceRate.toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-warning">{stats.lateDays}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Left Early</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-info">{stats.leftEarlyDays}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Left On Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{stats.leftOnTimeDays}</div>
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Attendance Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold">{stats.attendanceRate.toFixed(1)}%</div>
+            <p className="text-sm text-muted-foreground mt-2">Based on {stats.presentDays} present days out of {stats.totalDays} total days</p>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -185,11 +222,13 @@ export default function TeacherDetail() {
                 />
                 <YAxis 
                   domain={[0, 1]} 
-                  ticks={[0, 0.5, 1]}
+                  ticks={[0, 0.25, 0.5, 0.75, 1]}
                   tick={{ fill: 'hsl(var(--foreground))' }}
                   tickFormatter={(value) => {
                     if (value === 1) return 'Present';
-                    if (value === 0.5) return 'Late';
+                    if (value === 0.75) return 'Late';
+                    if (value === 0.5) return 'Left Early';
+                    if (value === 0.25) return 'Left On Time';
                     return 'Absent';
                   }}
                   label={{ value: 'Status', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--foreground))' } }}
@@ -197,7 +236,9 @@ export default function TeacherDetail() {
                 <Tooltip
                   formatter={(value: number) => {
                     if (value === 1) return ['Present', 'Status'];
-                    if (value === 0.5) return ['Late', 'Status'];
+                    if (value === 0.75) return ['Late', 'Status'];
+                    if (value === 0.5) return ['Left Early', 'Status'];
+                    if (value === 0.25) return ['Left On Time', 'Status'];
                     return ['Absent', 'Status'];
                   }}
                   contentStyle={{ 
@@ -261,6 +302,8 @@ export default function TeacherDetail() {
                 />
                 <Bar dataKey="present" fill="hsl(var(--success))" name="Present" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="late" fill="hsl(var(--warning))" name="Late" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="leftEarly" fill="hsl(var(--info))" name="Left Early" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="leftOnTime" fill="hsl(var(--primary))" name="Left On Time" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="absent" fill="hsl(var(--destructive))" name="Absent" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
