@@ -2,7 +2,7 @@ export interface AttendanceRecord {
   date: string;
   id: string;
   name: string;
-  status: 'present' | 'absent' | 'late';
+  status: 'present' | 'absent' | 'late' | 'left_early' | 'left_on_time';
   time_in: string;
   time_out: string;
   trade: string;
@@ -20,6 +20,8 @@ export interface AttendanceStats {
   presentDays: number;
   absentDays: number;
   lateDays: number;
+  leftEarlyDays: number;
+  leftOnTimeDays: number;
   attendanceRate: number;
 }
 

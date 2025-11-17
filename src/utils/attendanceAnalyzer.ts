@@ -2,9 +2,16 @@ import { AttendanceRecord, AttendanceStats, AIAnalysis, AttendanceCondition } fr
 
 export function calculateAttendanceStats(records: AttendanceRecord[]): AttendanceStats {
   const totalDays = records.length;
-  const presentDays = records.filter(r => r.status === 'present').length;
   const absentDays = records.filter(r => r.status === 'absent').length;
   const lateDays = records.filter(r => r.status === 'late').length;
+  const leftEarlyDays = records.filter(r => r.status === 'left_early').length;
+  const leftOnTimeDays = records.filter(r => r.status === 'left_on_time').length;
+  
+  // Anyone who came to school (present, late, left_early, left_on_time) counts as present
+  const presentDays = records.filter(r => 
+    r.status === 'present' || r.status === 'late' || r.status === 'left_early' || r.status === 'left_on_time'
+  ).length;
+  
   const attendanceRate = totalDays > 0 ? (presentDays / totalDays) * 100 : 0;
 
   return {
@@ -12,6 +19,8 @@ export function calculateAttendanceStats(records: AttendanceRecord[]): Attendanc
     presentDays,
     absentDays,
     lateDays,
+    leftEarlyDays,
+    leftOnTimeDays,
     attendanceRate,
   };
 }
