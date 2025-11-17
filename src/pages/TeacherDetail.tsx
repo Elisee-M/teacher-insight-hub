@@ -171,22 +171,57 @@ export default function TeacherDetail() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Attendance Trend</CardTitle>
+            <CardTitle>Daily Attendance Trend</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis domain={[0, 1]} ticks={[0, 0.5, 1]} />
-                <Tooltip
-                  formatter={(value: number) => {
+              <LineChart data={trendData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fill: 'hsl(var(--foreground))' }}
+                  style={{ fontSize: '12px' }}
+                  label={{ value: 'Date', position: 'insideBottom', offset: -10, style: { fill: 'hsl(var(--foreground))' } }}
+                />
+                <YAxis 
+                  domain={[0, 1]} 
+                  ticks={[0, 0.5, 1]}
+                  tick={{ fill: 'hsl(var(--foreground))' }}
+                  tickFormatter={(value) => {
                     if (value === 1) return 'Present';
                     if (value === 0.5) return 'Late';
                     return 'Absent';
                   }}
+                  label={{ value: 'Status', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--foreground))' } }}
                 />
-                <Line type="monotone" dataKey="status" stroke="hsl(var(--primary))" strokeWidth={2} />
+                <Tooltip
+                  formatter={(value: number) => {
+                    if (value === 1) return ['Present', 'Status'];
+                    if (value === 0.5) return ['Late', 'Status'];
+                    return ['Absent', 'Status'];
+                  }}
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    padding: '12px'
+                  }}
+                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  iconType="line"
+                  formatter={() => 'Attendance Status'}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="status" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={3}
+                  name="Status"
+                  dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -194,19 +229,39 @@ export default function TeacherDetail() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Weekly Summary</CardTitle>
+            <CardTitle>Weekly Attendance Summary</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={weeklySummary}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="present" fill="hsl(var(--success))" name="Present" />
-                <Bar dataKey="late" fill="hsl(var(--warning))" name="Late" />
-                <Bar dataKey="absent" fill="hsl(var(--destructive))" name="Absent" />
+              <BarChart data={weeklySummary} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="week" 
+                  tick={{ fill: 'hsl(var(--foreground))' }}
+                  style={{ fontSize: '12px' }}
+                  label={{ value: 'Week Starting', position: 'insideBottom', offset: -10, style: { fill: 'hsl(var(--foreground))' } }}
+                />
+                <YAxis 
+                  tick={{ fill: 'hsl(var(--foreground))' }}
+                  label={{ value: 'Number of Days', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--foreground))' } }}
+                />
+                <Tooltip 
+                  formatter={(value: number, name: string) => [`${value} days`, name]}
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    padding: '12px'
+                  }}
+                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  iconType="rect"
+                />
+                <Bar dataKey="present" fill="hsl(var(--success))" name="Present" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="late" fill="hsl(var(--warning))" name="Late" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="absent" fill="hsl(var(--destructive))" name="Absent" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
