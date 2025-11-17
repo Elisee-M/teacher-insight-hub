@@ -115,9 +115,9 @@ export default function Dashboard() {
                     data={pieData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    labelLine={true}
+                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                    outerRadius={90}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -125,7 +125,15 @@ export default function Dashboard() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip 
+                    formatter={(value: number) => [`${value} teachers`, 'Count']}
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      padding: '12px'
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -133,17 +141,41 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Attendance Breakdown</CardTitle>
+              <CardTitle>Attendance Count by Status</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]} />
+                <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                    style={{ fontSize: '14px', fontWeight: 500 }}
+                  />
+                  <YAxis 
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                    label={{ value: 'Number of Teachers', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--foreground))' } }}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => [`${value} teachers`, 'Count']}
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      padding: '12px'
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                  />
+                  <Legend 
+                    wrapperStyle={{ paddingTop: '20px' }}
+                    iconType="circle"
+                    formatter={() => 'Teacher Count'}
+                  />
+                  <Bar 
+                    dataKey="count" 
+                    radius={[8, 8, 0, 0]}
+                    label={{ position: 'top', fill: 'hsl(var(--foreground))', fontWeight: 600 }}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
