@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ref, get } from 'firebase/database';
 import { database } from '@/lib/firebase';
+import { parseAttendanceStatus } from '@/utils/statusParser';
 
 export default function Dashboard() {
   const { teachers, loading } = useTeachers();
@@ -36,18 +37,25 @@ export default function Dashboard() {
         let leftOnTime = 0;
 
         Object.values(teachersData).forEach((teacher: any) => {
-          const status = (teacher.status || '').toLowerCase();
+          const status = teacher.status || '';
+          const parsedStatus = parseAttendanceStatus(status);
           
-          if (status.includes('absent')) {
-            absent++;
-          } else if (status.includes('late')) {
-            late++;
-          } else if (status.includes('left_early') || status.includes('left early')) {
-            leftEarly++;
-          } else if (status.includes('left_on_time') || status.includes('left on time')) {
-            leftOnTime++;
-          } else if (status.includes('present') || status) {
-            present++;
+          switch (parsedStatus) {
+            case 'absent':
+              absent++;
+              break;
+            case 'late':
+              late++;
+              break;
+            case 'left_early':
+              leftEarly++;
+              break;
+            case 'left_on_time':
+              leftOnTime++;
+              break;
+            case 'present':
+              present++;
+              break;
           }
         });
 
