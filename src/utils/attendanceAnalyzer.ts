@@ -12,7 +12,22 @@ export function calculateAttendanceStats(records: AttendanceRecord[]): Attendanc
     r.status === 'present' || r.status === 'late' || r.status === 'left_early' || r.status === 'left_on_time'
   ).length;
   
-  const attendanceRate = totalDays > 0 ? (presentDays / totalDays) * 100 : 0;
+  // Calculate weighted attendance rate to differentiate quality
+  // Perfect attendance (present/left_on_time): 1.0 point
+  // Late arrival: 0.75 points (penalize 25%)
+  // Left early: 0.75 points (penalize 25%)
+  // Absent: 0 points
+  let attendancePoints = 0;
+  records.forEach(r => {
+    if (r.status === 'present' || r.status === 'left_on_time') {
+      attendancePoints += 1.0;
+    } else if (r.status === 'late' || r.status === 'left_early') {
+      attendancePoints += 0.75;
+    }
+    // absent = 0 points
+  });
+  
+  const attendanceRate = totalDays > 0 ? (attendancePoints / totalDays) * 100 : 0;
 
   return {
     totalDays,
@@ -26,21 +41,32 @@ export function calculateAttendanceStats(records: AttendanceRecord[]): Attendanc
 }
 
 export function analyzeAttendance(stats: AttendanceStats): AIAnalysis {
-  const { attendanceRate, lateDays, totalDays, absentDays } = stats;
+  const { attendanceRate, lateDays, totalDays, absentDays, leftEarlyDays } = stats;
   
-  // Determine condition based on attendance rate
+  // Determine condition based on weighted attendance rate
   let condition: AttendanceCondition;
   let reason: string;
   let advice: string;
 
-  if (attendanceRate >= 90) {
+  // Check if attendance is perfect (no late, no early leave, no absent)
+  const isPerfectAttendance = lateDays === 0 && leftEarlyDays === 0 && absentDays === 0;
+
+  if (attendanceRate >= 95 && isPerfectAttendance) {
+    condition = 'excellent';
+    reason = `Perfect attendance rate of ${attendanceRate.toFixed(1)}% with no lateness or early departures`;
+    advice = 'Outstanding! Perfect attendance record. Exemplary role model.';
+  } else if (attendanceRate >= 90) {
     condition = 'excellent';
     reason = `Outstanding attendance rate of ${attendanceRate.toFixed(1)}%`;
-    advice = 'Keep up the strong consistency! Great role model.';
+    if (lateDays > 0 || leftEarlyDays > 0) {
+      advice = 'Excellent attendance, but minimize late arrivals and early departures for perfect record.';
+    } else {
+      advice = 'Keep up the strong consistency! Great role model.';
+    }
   } else if (attendanceRate >= 75) {
     condition = 'good';
     reason = `Good attendance rate of ${attendanceRate.toFixed(1)}%`;
-    advice = 'Good performance—improve a little to reach excellence.';
+    advice = 'Good performance—improve punctuality and reduce absences to reach excellence.';
   } else if (attendanceRate >= 60) {
     condition = 'weak';
     reason = `Below average attendance rate of ${attendanceRate.toFixed(1)}%`;
@@ -55,6 +81,13 @@ export function analyzeAttendance(stats: AttendanceStats): AIAnalysis {
   let latePattern: string | undefined;
   if (totalDays > 0 && lateDays > totalDays * 0.30) {
     latePattern = 'Frequent lateness detected. Over 30% of attendance shows late arrivals.';
+  } else if (totalDays > 0 && lateDays > 0) {
+    latePattern = `${lateDays} late arrival${lateDays > 1 ? 's' : ''} recorded. Encourage punctuality.`;
+  }
+
+  // Check for early departure pattern
+  if (totalDays > 0 && leftEarlyDays > totalDays * 0.20) {
+    advice += ' Frequent early departures noticed. Address this pattern.';
   }
 
   // Check for declining pattern (simple heuristic: more absences in recent records)
