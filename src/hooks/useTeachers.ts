@@ -5,6 +5,7 @@ import { Teacher, AttendanceRecord } from '@/types/teacher';
 import { toast } from '@/hooks/use-toast';
 
 // Parse comma-separated status to determine attendance
+// Priority: absent > late > left_early > left_on_time > present
 function parseAttendanceStatus(status: string): 'present' | 'absent' | 'late' | 'left_early' | 'left_on_time' {
   const statusLower = status.toLowerCase();
   
@@ -13,9 +14,9 @@ function parseAttendanceStatus(status: string): 'present' | 'absent' | 'late' | 
     return 'absent';
   }
   
-  // Check for left_on_time
-  if (statusLower.includes('left_on_time') || statusLower.includes('left on time')) {
-    return 'left_on_time';
+  // Check for late (important for attendance quality)
+  if (statusLower.includes('late')) {
+    return 'late';
   }
   
   // Check for left_early
@@ -23,9 +24,9 @@ function parseAttendanceStatus(status: string): 'present' | 'absent' | 'late' | 
     return 'left_early';
   }
   
-  // Check for late
-  if (statusLower.includes('late')) {
-    return 'late';
+  // Check for left_on_time
+  if (statusLower.includes('left_on_time') || statusLower.includes('left on time')) {
+    return 'left_on_time';
   }
   
   // Check for present
