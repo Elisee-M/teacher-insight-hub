@@ -37,25 +37,31 @@ export default function Dashboard() {
         let leftOnTime = 0;
 
         Object.values(teachersData).forEach((teacher: any) => {
-          const status = teacher.status || '';
-          const parsedStatus = parseAttendanceStatus(status);
+          const status = (teacher.status || '').toLowerCase();
           
-          switch (parsedStatus) {
-            case 'absent':
-              absent++;
-              break;
-            case 'late':
-              late++;
-              break;
-            case 'left_early':
-              leftEarly++;
-              break;
-            case 'left_on_time':
-              leftOnTime++;
-              break;
-            case 'present':
-              present++;
-              break;
+          // Count present if status contains "present"
+          if (status.includes('present')) {
+            present++;
+          }
+          
+          // Count absent if status contains "absent"
+          if (status.includes('absent')) {
+            absent++;
+          }
+          
+          // Count late if status contains "late"
+          if (status.includes('late')) {
+            late++;
+          }
+          
+          // Count left early if status contains "left_early" or "left early"
+          if (status.includes('left_early') || status.includes('left early')) {
+            leftEarly++;
+          }
+          
+          // Count left on time if status contains "left_on_time" or "left on time"
+          if (status.includes('left_on_time') || status.includes('left on time')) {
+            leftOnTime++;
           }
         });
 
