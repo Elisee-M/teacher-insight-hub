@@ -37,27 +37,29 @@ export default function Dashboard() {
         let leftOnTime = 0;
 
         Object.values(teachersData).forEach((teacher: any) => {
-          const status = teacher.status || '';
-          const parsedStatus = parseAttendanceStatus(status);
+          const status = (teacher.status || '').toLowerCase();
           
-          switch (parsedStatus) {
-            case 'absent':
-              absent++;
-              break;
-            case 'late':
-              late++;
-              break;
-            case 'left_early':
-              leftEarly++;
-              break;
-            case 'left_on_time':
-              leftOnTime++;
-              break;
-            case 'present':
-              present++;
-              break;
+          // Check for absent first - if absent, skip other checks
+          if (status.includes('absent')) {
+            absent++;
+            return;
+          }
+          
+          // Check for late arrival
+          if (status.includes('late')) {
+            late++;
+          }
+          
+          // Check for exit status
+          if (status.includes('left_early') || status.includes('left early')) {
+            leftEarly++;
+          } else if (status.includes('left_on_time') || status.includes('left on time')) {
+            leftOnTime++;
           }
         });
+        
+        // Present = teachers who left (either early or on time)
+        present = leftEarly + leftOnTime;
 
         setTodayStats({
           presentToday: present,
