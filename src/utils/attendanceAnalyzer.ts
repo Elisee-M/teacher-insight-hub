@@ -7,10 +7,8 @@ export function calculateAttendanceStats(records: AttendanceRecord[]): Attendanc
   const leftEarlyDays = records.filter(r => r.status === 'left_early').length;
   const leftOnTimeDays = records.filter(r => r.status === 'left_on_time').length;
   
-  // Anyone who came to school (present, late, left_early, left_on_time) counts as present
-  const presentDays = records.filter(r => 
-    r.status === 'present' || r.status === 'late' || r.status === 'left_early' || r.status === 'left_on_time'
-  ).length;
+  // Present days = only those who have left status (completed their day)
+  const presentDays = leftEarlyDays + leftOnTimeDays;
   
   // Calculate weighted attendance rate to differentiate quality
   // Perfect attendance (present/left_on_time): 1.0 point
