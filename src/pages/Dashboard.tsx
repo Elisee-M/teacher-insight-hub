@@ -94,7 +94,6 @@ export default function Dashboard() {
   }, [teachers, todayStats]);
 
   const pieData = [
-    { name: 'Present', value: stats.presentToday, color: 'hsl(var(--success))' },
     { name: 'Absent', value: stats.absentToday, color: 'hsl(var(--destructive))' },
     { name: 'Late', value: stats.lateToday, color: 'hsl(var(--warning))' },
     { name: 'Left Early', value: stats.leftEarlyToday, color: 'hsl(var(--info))' },
@@ -179,6 +178,12 @@ export default function Dashboard() {
               <CardTitle>Today's Attendance Distribution</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm font-medium text-muted-foreground">Present Today</p>
+                <p className="text-2xl font-bold text-success">
+                  {stats.presentToday} ({stats.totalTeachers > 0 ? ((stats.presentToday / stats.totalTeachers) * 100).toFixed(1) : 0}%)
+                </p>
+              </div>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
