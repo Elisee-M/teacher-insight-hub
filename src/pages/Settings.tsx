@@ -17,7 +17,7 @@ export default function Settings() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<{ id: string; name: string; role: string } | null>(null);
-  const [newUser, setNewUser] = useState({ id: '', name: '', role: 'user' });
+  const [newUser, setNewUser] = useState({ name: '', role: 'user' });
 
   if (loading) {
     return (
@@ -32,22 +32,22 @@ export default function Settings() {
   }
 
   const handleAddUser = async () => {
-    if (!newUser.id || !newUser.name) {
+    if (!newUser.name) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Please fill in all fields',
+        description: 'Please enter a name',
       });
       return;
     }
 
     try {
-      await addUser(newUser.id, newUser.name, newUser.role);
+      await addUser(newUser.name, newUser.role);
       toast({
         title: 'Success',
         description: 'User added successfully',
       });
-      setNewUser({ id: '', name: '', role: 'user' });
+      setNewUser({ name: '', role: 'user' });
       setIsAddDialogOpen(false);
     } catch (error) {
       toast({
@@ -85,11 +85,11 @@ export default function Settings() {
         title: 'Success',
         description: 'User deleted successfully',
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to delete user',
+        description: error.message || 'Failed to delete user',
       });
     }
   };
@@ -120,15 +120,6 @@ export default function Settings() {
                     <DialogDescription>Add a new user to the system</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="userId">User ID</Label>
-                      <Input
-                        id="userId"
-                        placeholder="Enter Firebase Auth UID"
-                        value={newUser.id}
-                        onChange={(e) => setNewUser({ ...newUser, id: e.target.value })}
-                      />
-                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="userName">Name</Label>
                       <Input
@@ -189,13 +180,15 @@ export default function Settings() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteUser(appUser.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {appUser.role !== 'admin' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteUser(appUser.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

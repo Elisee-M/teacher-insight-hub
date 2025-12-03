@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ref, get, set, update, remove, onValue } from 'firebase/database';
+import { ref, set, update, remove, onValue, push } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,6 +18,7 @@ export function useAdmin() {
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setUsers([]);
       setLoading(false);
       return;
     }
@@ -38,16 +39,23 @@ export function useAdmin() {
           role: data[id].role || 'user',
         }));
         setUsers(usersList);
+      } else {
+        setUsers([]);
       }
+      setLoading(false);
+    }, (error) => {
+      // Silently handle errors when user logs out
+      console.log('Firebase listener detached');
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [user]);
 
-  const addUser = async (userId: string, name: string, role: string) => {
-    const userRef = ref(database, `users/${userId}`);
-    await set(userRef, { name, role });
+  const addUser = async (name: string, role: string) => {
+    const usersRef = ref(database, 'users');
+    const newUserRef = push(usersRef);
+    await set(newUserRef, { name, role });
   };
 
   const updateUser = async (userId: string, name: string, role: string) => {
@@ -56,6 +64,11 @@ export function useAdmin() {
   };
 
   const deleteUser = async (userId: string) => {
+    // Check if user is admin - prevent deletion
+    const userToDelete = users.find(u => u.id === userId);
+    if (userToDelete?.role === 'admin') {
+      throw new Error('Cannot delete admin users');
+    }
     const userRef = ref(database, `users/${userId}`);
     await remove(userRef);
   };
