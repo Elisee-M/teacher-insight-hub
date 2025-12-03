@@ -1,11 +1,13 @@
 import { NavLink } from '@/components/NavLink';
-import { LayoutDashboard, LogOut } from 'lucide-react';
+import { LayoutDashboard, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
 
 export function Navigation() {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -42,6 +44,16 @@ export function Navigation() {
               >
                 Teachers
               </NavLink>
+              {isAdmin && (
+                <NavLink
+                  to="/settings"
+                  className="px-4 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent"
+                  activeClassName="bg-accent text-accent-foreground"
+                >
+                  <Settings className="h-4 w-4 inline mr-1" />
+                  Settings
+                </NavLink>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-3">
