@@ -31,7 +31,7 @@ export default function TeacherDetail() {
       else statusValue = 0; // absent
       
       return {
-        date: new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        date: record.date, // Use raw date from database
         status: statusValue,
       };
     });
@@ -39,9 +39,8 @@ export default function TeacherDetail() {
     // Weekly summary
     const weeklyData: Record<string, { present: number; absent: number; late: number; leftEarly: number; leftOnTime: number }> = {};
     teacher.attendanceRecords.forEach((record) => {
-      const weekStart = new Date(record.date);
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-      const weekKey = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      // Use raw date as week key - group by the date directly from database
+      const weekKey = record.date;
       
       if (!weeklyData[weekKey]) {
         weeklyData[weekKey] = { present: 0, absent: 0, late: 0, leftEarly: 0, leftOnTime: 0 };
