@@ -10,9 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -21,19 +20,11 @@ export default function Login() {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        await signUp(email, password);
-        toast({
-          title: 'Account created!',
-          description: 'You can now sign in.',
-        });
-      } else {
-        await signIn(email, password);
-        toast({
-          title: 'Welcome back!',
-          description: 'Successfully signed in.',
-        });
-      }
+      await signIn(email, password);
+      toast({
+        title: 'Welcome back!',
+        description: 'Successfully signed in.',
+      });
       navigate('/');
     } catch (error: any) {
       toast({
@@ -50,11 +41,9 @@ export default function Login() {
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? 'Create Account' : 'Sign In'}</CardTitle>
+          <CardTitle>Sign In</CardTitle>
           <CardDescription>
-            {isSignUp
-              ? 'Create a new account to access the Teacher Attendance Analyzer'
-              : 'Sign in to access the Teacher Attendance Analyzer'}
+            Sign in to access the Teacher Attendance Analyzer
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -82,17 +71,7 @@ export default function Login() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Sign up"}
+              {loading ? 'Loading...' : 'Sign In'}
             </Button>
           </form>
         </CardContent>
